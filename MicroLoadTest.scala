@@ -19,6 +19,7 @@ class MicroLoadTest extends Simulation {
   //  val sessionHeaders = Map("Authorization" -> "Bearer ${authToken}", "Content-Type" -> "application/json")
 
 
+  //seperated out the login section for testing
   //  val scn =  scenario("User Login")
   //    .exec(http("Login")
   //    .post("/login")
@@ -33,9 +34,9 @@ class MicroLoadTest extends Simulation {
 
 
   val scn = scenario("BasicSimulation") // A scenario is a chain of requests and pauses
-    .exec(http("List People")
-    .get("/people")
-    .check(status.is(200)))
+    .exec(http("List People") // can put any name, will show up in your test results
+    .get("/people") // path to url
+    .check(status.is(200))) // Check status, can check to confirm any status, or is not a status
     .pause(7) // Note that Gatling uses real time pauses
     .exec(http("UserId")
     .get(s"/people/$id"))
@@ -56,6 +57,14 @@ class MicroLoadTest extends Simulation {
       .headers(sessionHeaders)
       .body(StringBody("""${createPerson}"""))
     )
+    .exec(http("Disable a person")
+      .put(s"/$id/disable")
+      .headers(sessionHeaders)
+      .check(status.is(200)))
+    .exec(http("Enable a person")
+      .put(s"/$id/enable")
+      .headers(sessionHeaders)
+      .check(status.is(200)))
 
   setUp(
     scn.inject(atOnceUsers(userCount))
@@ -63,7 +72,7 @@ class MicroLoadTest extends Simulation {
 
 
 
-
+  // if you want to add users as time goes un comment the following and comment out the above setUP
   //  setUp(
   //    scn.inject(rampUsers(userCount) over (10 minutes))
   //  ).protocols(httpConf)
